@@ -1,0 +1,6 @@
+
+  ipset-persistent has become a native package (meaning there is no
+  upstream tarball). In its present form, ipset-persistent is unlikely
+  to be useful outside Debian or Debian-derivatives, and I do not plan to
+  include any support for other distributions, so a native package makes the
+  maintenance overhead considerably smaller.

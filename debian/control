@@ -1,0 +1,16 @@
+Source: ipset-persistent
+Section: admin
+Priority: optional
+Maintainer: Sergey Viuchny <sergey@de-bs.ru>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.9.3
+
+Package: ipset-persistent
+Architecture: all
+Depends: ipset, lsb-base, ${misc:Depends}
+Description: boot-time loader for ipset rules
+ This package provides a system startup script that restores ipset
+ rules from a configuration file.
+ .
+ Since this is aimed at experienced administrators, there is no configuration
+ wizard.

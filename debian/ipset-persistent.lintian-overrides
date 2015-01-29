@@ -1,0 +1,2 @@
+ipset-persistent: no-debconf-templates
+ipset-persistent: init.d-script-missing-dependency-on-remote_fs

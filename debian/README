@@ -1,0 +1,14 @@
+The Debian Package ipset-persistent
+----------------------------
+
+This is a very simple script that restores the file /etc/ipset/rules as
+the active ruleset at system boot.
+
+Loading of rules is guaranteed to happen before network interfaces are
+brought up.
+
+To save the current ruleset, use "ipset save >/etc/ipsetes/rules"
+or "ipset save >/etc/ipset/rules", or
+"invoke-rc.d ipset-persistent save"
+
+ -- Sergey Viuchny <sergey@de-bs.ru>  Sun, 09 Dec 2012 11:31:08 +0400

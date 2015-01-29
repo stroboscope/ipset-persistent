@@ -1,0 +1,101 @@
+#!/bin/sh
+#		Written originaly for iptables-persistent 
+#               by Simon Richter <sjr@debian.org>
+#		modified by Jonathan Wiltshire <jmw@debian.org>
+#		with help from Christoph Anton Mitterer
+#
+
+### BEGIN INIT INFO
+# Provides:          ipset-persistent
+# Required-Start:    mountkernfs $local_fs 
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Start-Before:    $network 
+# X-Stop-After:      $network
+# Short-Description: Set up ipset rules
+# Description:       Loads/saves current ipset rules from/to /etc/ipset
+#  to provide a persistent rule set during boot time
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+rc=0
+
+load_rules()
+{
+	log_action_begin_msg "Loading ipset rules"
+
+	#load rules
+	if [ ! -f /etc/ipset/rules ]; then
+		log_action_cont_msg " skipping (no rules to load)"
+	else
+		log_action_cont_msg " rules"
+		ipset --exist restore < /etc/ipset/rules 2> /dev/null
+		if [ $? -ne 0 ]; then
+			rc=1
+		fi
+	fi
+
+	log_action_end_msg $rc
+}
+
+save_rules()
+{
+	log_action_begin_msg "Saving rules"
+
+	#save rules
+	#need at least ip_set loaded:
+	/usr/sbin/modprobe -q ip_set
+        lsmod | grep ip_set > /dev/null
+        if ! [ $? ]; then
+		log_action_cont_msg " skipping (no modules loaded)"
+	elif [ -x /usr/sbin/ipset ]; then
+		log_action_cont_msg " rules"
+		ipset save > /etc/ipset/rules
+		if [ $? -ne 0 ]; then
+			rc=1
+		fi
+	fi
+
+	log_action_end_msg $rc
+}
+
+flush_rules()
+{
+	log_action_begin_msg "Flushing rules"
+
+        lsmod | grep ip_set > /dev/null
+        if ! [ $? ]; then
+		log_action_cont_msg " skipping IPv4 (no module loaded)"
+	elif [ -x /usr/sbin/ipset ]; then
+		log_action_cont_msg " rules"
+		for param in flush destroy; do /usr/sbin/ipset $param; done
+	fi
+
+	log_action_end_msg 0
+}
+
+case "$1" in
+start|restart|reload|force-reload)
+	load_rules
+	;;
+save)
+	save_rules
+	;;
+stop)
+	# Why? because if stop is used, the ipset gets flushed for a variable
+	# amount of time during package upgrades, leaving the machine vulnerable
+	# It's also not always desirable to flush during purge
+	echo "Automatic flushing disabled, use \"flush\" instead of \"stop\""
+	;;
+flush)
+	flush_rules
+	;;
+*)
+    echo "Usage: $0 {start|restart|reload|force-reload|save|flush}" >&2
+    exit 1
+    ;;
+esac
+
+exit $rc
